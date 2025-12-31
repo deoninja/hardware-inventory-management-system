@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Item {
+  id            Int        @id @default(autoincrement())
+  name          String
+  sku           String     @unique
+  categoryId    Int
+  category      Category   @relation(fields: [categoryId], references: [id])
+  supplierId    Int?
+  supplier      Supplier?  @relation(fields: [supplierId], references: [id])
+  locationId    Int?
+  location      Location?  @relation(fields: [locationId], references: [id])
+  quantity      Int        @default(0)
+  price         Float
+  minStockLevel Int        @default(5)
+  movements     Movement[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  items Item[]
+}
+
+model Supplier {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  contactInfo String?
+  items       Item[]
+}
+
+model Location {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  items       Item[]
+}
+
+model Movement {
+  id        Int      @id @default(autoincrement())
+  itemId    Int
+  item      Item     @relation(fields: [itemId], references: [id])
+  type      String   // "IN" or "OUT"
+  quantity  Int
+  date      DateTime @default(now())
+}
